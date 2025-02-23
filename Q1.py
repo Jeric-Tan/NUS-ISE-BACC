@@ -1,5 +1,7 @@
 import math
-quarters = ["Q1'26", "Q2'26", "Q3'26", "Q4'26", "Q1'27", "Q2'27", "Q3'27", "Q4'27"]
+
+# Question 1A)
+QUARTERS = ["Q1'26", "Q2'26", "Q3'26", "Q4'26", "Q1'27", "Q2'27", "Q3'27", "Q4'27"]
 TAM = [21.8, 27.4, 34.9, 39.0, 44.7, 51.5, 52.5, 53.5]  # in billion GB
 weeks_per_quarter = 13
 
@@ -23,8 +25,8 @@ yield_data = {
 
 max_delta = 2500  
 
-# Iterate over quarters starting from 1 because we can skip Q1'26
-for q in range(1, len(quarters)):
+# Iterate over QUARTERS starting from 1 because we can skip Q1'26
+for q in range(1, len(QUARTERS)):
     
     # Set initial guess
     current = {node: loading[node][-1] for node in loading}
@@ -74,20 +76,6 @@ for q in range(1, len(quarters)):
     # Append and round nearest integer
     for node in loading:
         loading[node].append(int(round(current[node])))
-
-    # PRINTING 
-    #print(f"Optimized weekly loading for {quarters[q]}:")
-    #for node in loading:
-    #    print(f"{node}: {loading[node][q]} wafers")
-    #print()
-
-    # Checking
-    #current_output_check = total_output(current)
-    #print(f"Total output for {quarters[q]} (in billion GB): {current_output_check / 1e9:.2f} billion GB")
-    #print(f"Target TAM for {quarters[q]} (in billion GB): {TAM[q]}")
-    #print()
-
-
 '''
 LOADING
         Q1'26   Q2'26   Q3'26   Q4'26   Q1'27   Q2'27   Q3'27   Q4'27   
@@ -96,7 +84,7 @@ Node 2	5000	7026	9526	11490	11490	11490	11490	11490
 Node 3	1000	1000	1000	1000	3267	4778	4778	4922
 
 '''
-
+print(loading)
 # PART B
 ## I
 
@@ -127,45 +115,38 @@ workstation_utilization = {
 }
 
 #loading
+tools_required_per_quarter_per_workstation = {quarter: [] for quarter in QUARTERS}
 
-tools_required_per_quarter_per_workstation = {quarter: [] for quarter in quarters}
-tools_required_per_quarter = {quarter : 0 for quarter in quarters}
 # Calculate tool requirements for each quarter
-for i, quarter in enumerate(quarters):
-    # Initialize the total tool requirement for each quarter
+for i, quarter in enumerate(QUARTERS):
     quarter_tool_requirements = {}
     
     for station in workstation_minute_load:
-        tool_time = 0  # Reset tool time for each workstation
-        
-        # Calculate the total loading for the current quarter for all nodes
+        tool_time = 0  
+
+        # Calculate the tool_time
         for node_index, node in enumerate(["Node 1", "Node 2", "Node 3"]):
             tool_time += workstation_minute_load[station][node_index] * loading[node][i]
         
-        # Calculate the tool requirement for the workstation in the current quarter
+        # Calculate the tool requirement
         tool_requirement = tool_time / (7*24*60) * workstation_utilization[station]
         
-        # Add the tool requirement to the dictionary, rounded up to the nearest integer
+        # Add the rounded up tool requirement to the dictionary 
         quarter_tool_requirements[station] = math.ceil(tool_requirement)
     
     # Store the tool requirements for the current quarter
     tools_required_per_quarter_per_workstation[quarter] = quarter_tool_requirements
-        
-for quarter in tools_required_per_quarter:
-    tools_required_per_quarter[quarter] = sum(tools_required_per_quarter_per_workstation[quarter].values())
-        
-    
-#print(tools_required_per_quarter)
-'''
-Number of Tools per quarter
- "Q1'26": 56,
- "Q2'26": 62,
- "Q3'26": 68,
- "Q4'26": 76,
- "Q1'27": 81,
- "Q2'27": 83,
- "Q3'27": 81,
- "Q4'27": 82
+            
+''' OUTPUT
+Number of Tools per quarter per workstation
+Q1'26   6   9   4   7   9   2   12  3   3   1
+Q2'26	7	11	4	8	10	2	12	2	4	1
+Q3'26	3	13	4	8	12	2	12	2	5	1
+Q4'26	8	14	5	10	14	3	12	3	6	1
+Q1'27	9	14	6	10	14	4	14	3	6	1
+Q2'27	9	14	6	10	14	4	16	3	6	1
+Q3'27	9	14	6	10	13	4	15	3	6	1
+Q4'27	9	14	6	10	13	4	16	3	6	1
 '''
 
 # II
@@ -182,33 +163,80 @@ workstation_CAPEX_cost = {
     "J": 8.0
 }
 
-CAPEX_cost = {quarter : 0 for quarter in quarters}
-for quarter, workstation_tools in tools_required_per_quarter_per_workstation.items():
+workstation_tools_count = {
+    "A": 10,
+    "B": 18,
+    "C": 5,
+    "D": 11,
+    "E": 15,
+    "F": 2,
+    "G": 23,
+    "H": 3,
+    "I": 4,
+    "J": 1
+}
+
+additional_tools_required = {quarter: {} for quarter in QUARTERS}
+for quarter, requirements in tools_required_per_quarter_per_workstation.items():
+
+    for station, required in requirements.items():
+        available = workstation_tools_count[station]
+        additional_needed = required - available
+    
+        # Only add tools if needed
+        additional_tools_required[quarter][station] = max(0, additional_needed)
+        
+        # Update the tool count 
+        workstation_tools_count[station] += max(0, additional_needed)
+
+''' OUTPUT
+Q1'26  0  0  0  0  0  0  0  0  0  0
+Q2'26  0  0  0  0  0  0  0  0  0  0
+Q3'26  0  0  0  0  0  0  0  0  1  0
+Q4'26  0  0  0  0  0  1  0  0  1  0
+Q1'27  0  0  1  0  0  1  0  0  0  0
+Q2'27  0  0  0  0  0  0  0  0  0  0
+Q3'27  0  0  0  0  0  0  0  0  0  0
+Q4'27  0  0  0  0  0  0  0  0  0  0
+'''
+
+
+CAPEX_cost = {quarter : 0 for quarter in QUARTERS}
+
+## Calculating the CAPEX incurred each quarter
+for quarter, workstation_tools in additional_tools_required.items():
     #print(workstation_tools)
     cost = 0
-    for workshop, value in workstation_tools.items():
+    for workstation, value in workstation_tools.items():
         #print(workshop, value)
-        cost += value * workstation_CAPEX_cost[workshop]
+        cost += value * workstation_CAPEX_cost[workstation]
+
+
+
+         
     CAPEX_cost[quarter] = round(cost, 1)
-    
 
 '''
 CAPEX COST PER QUARTER
-"Q1'26": 192.9,
-"Q2'26": 217.4,
-"Q3'26": 242.4,
-"Q4'26": 272.6,
-"Q1'27": 288.0,
-"Q2'27": 292.2,
-"Q3'27": 286.6,
-"Q4'27": 288.7
+Q1'26: 0.0
+Q2'26: 0.0
+Q3'26: 3.0
+Q4'26: 9.0
+Q1'27: 8.2
+Q2'27: 0.0
+Q3'27: 0.0
+Q4'27: 0.0
 '''
 
 ## III
+## Kinda has issues becuase it uses TAM from qn and not TAM from us
+## Change it manually since no need to change code
 net_profit = 0 
-# Do not count Q1'26 since its fully paid for (given)
-for i, quarter in enumerate(quarters[1:]):
-    net_profit += TAM[i] * 0.002 * 1000000000 
-    net_profit -= CAPEX_cost[quarter] * 1000000
+for i, quarter in enumerate(QUARTERS):
+    revenue = TAM[i] * 0.002 * 1000000000 
+    cost = CAPEX_cost[quarter] * 1000000
+    net_profit += revenue - cost
+    
+#print(net_profit)
+# Net: 
 
-print(net_profit)

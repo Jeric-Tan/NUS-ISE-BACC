@@ -65,9 +65,9 @@ for i in mean_rpt:
 
 ## TODO CHANGE 
 loading = {
-    'Node 1' : 12000,   #np.array([12000, 14500, 17000, 19500, 22000, 24500, 27000, 24500]), 
-    'Node 2' : 5000,    #np.array([13000, 14500, 17000, 19500, 22000, 24500, 27000, 24500]),
-    'Node 3' : 1000     #np.array([12000, 14500, 17000, 19500, 22000, 24500, 27000, 24500])
+    'Node 1' : 12000,    #np.array([12000, 12000, 12000, 12000, 12000, 12000, 11468, 11468]), 
+    'Node 2' : 5000,     #np.array([5000, 7026, 9526, 11490, 11490, 11490, 11490, 11490]),
+    'Node 3' : 1000      #np.array([1000, 1000, 1000, 1000, 3267, 4778, 4778,4922])
 }
 #minute load is expect rpt
 
@@ -78,7 +78,8 @@ for node in expected_value:
     loading_node = loading[node]
     
     tool_requirement += (loading_node * minute_load_node) / ((7 * 24 * 60) * ultil_node)
-
+    print(tool_requirement)
+print(tool_requirement)
 
 ## PART IV
 num_wafers = 10000
